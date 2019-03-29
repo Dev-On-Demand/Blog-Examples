@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Custom_identity_Schema.DataModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Custom_identity_Schema.Identity.Stores;
 
 namespace Custom_identity_Schema
 {
@@ -24,6 +28,10 @@ namespace Custom_identity_Schema
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connection = Configuration.GetConnectionString("customDb");
+
+            services.AddDbContext<CustomDataContext>(options => options.UseSqlServer(connection));
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -31,6 +39,19 @@ namespace Custom_identity_Schema
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddIdentity<CusUser, CusRole>().AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.LoginPath = "/Login/";
+                options.LogoutPath = "/Login/Logout";
+                options.ExpireTimeSpan = new System.TimeSpan(0,1,0,0,0);
+                options.Cookie.Expiration = new System.TimeSpan(0,1,0,0,0);
+            });
+
+            services.AddTransient<IUserRoleStore<CusUser>, CustomUserStore>();
+            services.AddTransient<IRoleStore<CusRole>, CustomRoleStore>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -52,6 +73,7 @@ namespace Custom_identity_Schema
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {
