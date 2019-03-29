@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Dev-On-Demand/Blog-Examples.svg?branch=master)](https://travis-ci.org/Dev-On-Demand/Blog-Examples) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/Dev-On-Demand/Blog-Examples.svg?branch=master)](https://travis-ci.org/Dev-On-Demand/Blog-Examples) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![codecov](https://codecov.io/gh/Dev-On-Demand/Blog-Examples/branch/master/graph/badge.svg)](https://codecov.io/gh/Dev-On-Demand/Blog-Examples)
 # Custom Identity Schema
 This example looks at how you  can implement the Identity framework in asp.net Core to use a custom database schema that contains your users and roles. While these types of implementations can get very complex at a database level, this will look at a simple scenario of three tables:
  - User

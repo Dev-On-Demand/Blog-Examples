@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Custom-identity-Schema", "Custom-identity-Schema\Custom-identity-Schema.csproj", "{3F819CFB-0C28-482D-AE7B-C534BBB8E3EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tests", "tests\tests.csproj", "{E3686A9C-C569-471B-8D07-8B8AD8C0368B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{3F819CFB-0C28-482D-AE7B-C534BBB8E3EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F819CFB-0C28-482D-AE7B-C534BBB8E3EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F819CFB-0C28-482D-AE7B-C534BBB8E3EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3686A9C-C569-471B-8D07-8B8AD8C0368B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3686A9C-C569-471B-8D07-8B8AD8C0368B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3686A9C-C569-471B-8D07-8B8AD8C0368B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3686A9C-C569-471B-8D07-8B8AD8C0368B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
