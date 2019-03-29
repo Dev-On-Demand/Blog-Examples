@@ -7,3 +7,5 @@ sudo: required
 script:
     - dotnet restore
     - dotnet build
+after_success:
+    - bash <(curl -s https://codecov.io/gh/Dev-On-Demand/Blog-Examples)
