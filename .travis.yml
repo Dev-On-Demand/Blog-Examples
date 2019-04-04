@@ -7,6 +7,6 @@ sudo: required
 script:
     - dotnet restore
     - dotnet build
-    - dotnet text --no-build tests/tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    - dotnet test --no-build tests/tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 after_script:
     - bash < (curl -s https://codecov.io/bash)
