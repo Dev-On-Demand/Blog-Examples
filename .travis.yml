@@ -6,7 +6,7 @@ dist: xenial
 sudo: required
 script:
     - dotnet restore
-    - dotnet build
-    - dotnet test --no-build tests/tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    - dotnet build -c Release
+    - dotnet test -c Release --no-build tests/tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 after_script:
     - bash < (curl -s https://codecov.io/bash)
