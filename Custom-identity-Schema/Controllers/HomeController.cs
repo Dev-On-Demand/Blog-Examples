@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Custom_identity_Schema.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Custom_identity_Schema.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         public IActionResult Index()
