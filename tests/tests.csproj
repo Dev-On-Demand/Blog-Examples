@@ -16,4 +16,7 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Custom-identity-Schema\Custom-identity-Schema.csproj" />
+  </ItemGroup>
 </Project>
