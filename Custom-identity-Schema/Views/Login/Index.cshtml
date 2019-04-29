@@ -5,7 +5,6 @@
 
 @using (Html.BeginForm("Login", "Login", null, FormMethod.Post, true, new { @class = "form-signin" }))
 {
-    <img class="mb-4" src="~/img/raptors_top.png" alt="" width="72" height="72">
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
     <label for="inputEmail" class="sr-only">Email address</label>
     @Html.TextBoxFor(m => m.Email, new { @type = "email", id = "inputEmail", @class = "form-control", placeholder = "Email Address", autofocus = "autofocus" })

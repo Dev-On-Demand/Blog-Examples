@@ -3,33 +3,56 @@ using System.Threading;
 using System.Threading.Tasks;
 using Custom_identity_Schema.DataModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+using System.Linq;
 
 namespace Custom_identity_Schema.Identity.Stores
 {
     public class CustomRoleStore : IRoleStore<CusRole>
     {
-        public CustomRoleStore()
+        public CustomRoleStore(CustomDataContext context)
         {
+            _context = context;
         }
 
-        public Task<IdentityResult> CreateAsync(CusRole role, CancellationToken cancellationToken)
+        private readonly CustomDataContext _context;
+
+        public async Task<IdentityResult> CreateAsync(CusRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _context.Add(role);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await Task.FromResult(IdentityResult.Success);
         }
 
-        public Task<IdentityResult> DeleteAsync(CusRole role, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(CusRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _context.Remove(role);
+
+            int i = await _context.SaveChangesAsync(cancellationToken);
+
+            return await Task.FromResult(i == 1 ? IdentityResult.Success : IdentityResult.Failed());
         }
 
-        public Task<CusRole> FindByIdAsync(string roleId, CancellationToken cancellationToken)
+
+        public async Task<CusRole> FindByIdAsync(string roleId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (int.TryParse(roleId, out int id))
+            {
+                return await _context.Roles.FindAsync(id);
+            }
+            else
+            {
+                return await Task.FromResult((CusRole)null);
+            }
         }
 
-        public Task<CusRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
+        public async Task<CusRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return await _context.Roles
+                           .AsAsyncEnumerable()
+                           .SingleOrDefault(p => p.Name.Equals(normalizedRoleName, StringComparison.OrdinalIgnoreCase), cancellationToken);
         }
 
         public Task<string> GetNormalizedRoleNameAsync(CusRole role, CancellationToken cancellationToken)
@@ -39,17 +62,17 @@ namespace Custom_identity_Schema.Identity.Stores
 
         public Task<string> GetRoleIdAsync(CusRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(role.Id.ToString());
         }
 
         public Task<string> GetRoleNameAsync(CusRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(role.Name);
         }
 
         public Task SetNormalizedRoleNameAsync(CusRole role, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((object)null);
         }
 
         public Task SetRoleNameAsync(CusRole role, string roleName, CancellationToken cancellationToken)
@@ -71,30 +94,16 @@ namespace Custom_identity_Schema.Identity.Stores
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    _context.Dispose();
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
 
                 disposedValue = true;
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~CustomRoleStore()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
         }
         #endregion
     }

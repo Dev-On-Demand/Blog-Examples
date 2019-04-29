@@ -4,10 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Custom_identity_Schema.DataModel;
 using Microsoft.AspNetCore.Identity;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+using Microsoft.EntityFrameworkCore;
 
 namespace Custom_identity_Schema.Identity.Stores
 {
-    public class CustomUserStore : IUserRoleStore<CusUser>
+    public class CustomUserStore : IUserRoleStore<CusUser>, IUserPasswordStore<CusUser>
     {
         public CustomUserStore(CustomDataContext context)
         {
@@ -18,112 +21,189 @@ namespace Custom_identity_Schema.Identity.Stores
 
         public Task AddToRoleAsync(CusUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var role = _context.Roles.Where(item => item.Name.Equals(roleName)).FirstOrDefault();
+
+            if(role != null)
+            { 
+                CusUserRole assignment = new CusUserRole() {  Id = role.Id, UserId = user.Id };
+                _context.UserRoles.Add(assignment);
+                _context.SaveChanges();
+            }
+
+            return Task.FromResult((CusUser)null);
         }
 
-        public Task<IdentityResult> CreateAsync(CusUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _context.Add(user);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await Task.FromResult(IdentityResult.Success);
         }
 
-        public Task<IdentityResult> DeleteAsync(CusUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _context.Remove(user);
+
+            int i = await _context.SaveChangesAsync(cancellationToken);
+
+            return await Task.FromResult(i == 1 ? IdentityResult.Success : IdentityResult.Failed());
         }
 
-        public Task<CusUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<CusUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (int.TryParse(userId, out int id))
+            {
+                return await _context.Users.FindAsync(id);
+            }
+            else
+            {
+                return await Task.FromResult((CusUser)null);
+            }
         }
 
-        public Task<CusUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<CusUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return await _context.Users
+                           .AsAsyncEnumerable()
+                           .SingleOrDefault(p => p.Email.Equals(normalizedUserName, StringComparison.OrdinalIgnoreCase), cancellationToken);
         }
 
         public Task<string> GetNormalizedUserNameAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(GetNormalizedUserNameAsync));
         }
 
         public Task<IList<string>> GetRolesAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var assignments = _context.UserRoles.Include(record => record.Role).Where(item => item.UserId.Equals(user.Id));
+
+            List<string> roles = new List<string>();
+
+            foreach(var record in assignments)
+            {
+                roles.Add(record.Role.Name);
+            }
+
+            return Task.FromResult<IList<string>>(roles);
         }
 
         public Task<string> GetUserIdAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.Id.ToString());
         }
 
         public Task<string> GetUserNameAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.Email);
         }
 
         public Task<IList<CusUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            IList<CusUser> users = new List<CusUser>();
+
+            var role = _context.Roles.Where(item => item.Name.Equals(roleName)).FirstOrDefault();
+
+            if(role != null)
+            {
+                var assignments = _context.UserRoles.Where(item => item.RoleId.Equals(role.Id));
+
+                foreach(var record in assignments)
+                {
+                    users.Add(record.User);
+                }
+            }
+
+            return Task.FromResult<IList<CusUser>>(users);
         }
 
         public Task<bool> IsInRoleAsync(CusUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            bool inRole = false;
+
+            var role = _context.Roles.Where(item => item.Name.Equals(roleName)).FirstOrDefault();
+
+            if(role != null)
+            { 
+                var assignment = _context.UserRoles.Where(item => item.UserId.Equals(user.Id) && item.RoleId.Equals(role.Id)).FirstOrDefault();
+
+                inRole = assignment != null;
+            }
+
+            return Task.FromResult<bool>(inRole);
         }
 
         public Task RemoveFromRoleAsync(CusUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var role = _context.Roles.Where(item => item.Name.Equals(roleName)).FirstOrDefault();
+
+            if(role != null)
+            {
+                var assignments = _context.UserRoles.Where(item => item.UserId.Equals(user.Id) && item.RoleId.Equals(role.Id));
+
+                _context.UserRoles.RemoveRange(assignments.ToArray());
+                _context.SaveChanges();
+            }
+
+            return Task.FromResult<CusUser>(null);
         }
 
         public Task SetNormalizedUserNameAsync(CusUser user, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((object)null);
         }
 
         public Task SetUserNameAsync(CusUser user, string userName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(SetUserNameAsync));
         }
 
-        public Task<IdentityResult> UpdateAsync(CusUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> UpdateAsync(CusUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            { 
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                return IdentityResult.Failed();
+            }
+
+            return IdentityResult.Success;
+        }
+
+        public Task SetPasswordHashAsync(CusUser user, string passwordHash, CancellationToken cancellationToken)
+        {
+            user.PasswordHash = passwordHash;
+
+            return Task.FromResult((object)null);
+        }
+
+        public Task<string> GetPasswordHashAsync(CusUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.PasswordHash);
+        }
+
+        public async Task<bool> HasPasswordAsync(CusUser user, CancellationToken cancellationToken)
+        {
+            return !String.IsNullOrWhiteSpace(user.PasswordHash);
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                _context?.Dispose();
             }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~CustomUserStore()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
         }
         #endregion
     }
